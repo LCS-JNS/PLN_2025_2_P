@@ -1,0 +1,12 @@
+Pela análise dos resultados notamos que houve sucesso no uso dos modelos probabilísticos e rede neural para fazer a identificação dos gêneros de uma notícia,
+sendo a rede neural e o Naive Bayes as formas mais promissoras.
+
+Vale ressaltar a preocupação com os seguintes pontos:
+
+- Notícias repetidas entre os dias
+- Notícias com apenas um título alterado mas com o mesmo conteúdo
+- Várias notícias parecidas sobre o mesmo assunto
+
+Esses casos podem fazer com que a base fique com overfitting pela alta repetição de palavras, dificultando os modelos de identificar o Gênero exato.
+
+De qualquer forma, com o resultado obtido usando +ou- 60 notícias foi possível ver que há a possíbilidade de seguir com essa ideia.

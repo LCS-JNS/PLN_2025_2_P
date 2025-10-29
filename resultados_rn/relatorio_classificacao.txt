@@ -1,0 +1,26 @@
+============================================================
+RELATÓRIO DE CLASSIFICAÇÃO - NOTÍCIAS G1
+============================================================
+
+Acurácia: 0.8667 (86.67%)
+
+Distribuição das predições:
+   CEARÁ: 2
+   CIÊNCIA: 3
+   ECONOMIA: 1
+   MUNDO: 4
+   POLÍTICA: 3
+   SÃO PAULO: 2
+
+              precision    recall  f1-score   support
+
+       CEARÁ     1.0000    1.0000    1.0000         2
+     CIÊNCIA     0.6667    1.0000    0.8000         2
+    ECONOMIA     1.0000    0.5000    0.6667         2
+       MUNDO     0.7500    0.7500    0.7500         4
+    POLÍTICA     1.0000    1.0000    1.0000         3
+   SÃO PAULO     1.0000    1.0000    1.0000         2
+
+    accuracy                         0.8667        15
+   macro avg     0.9028    0.8750    0.8694        15
+weighted avg     0.8889    0.8667    0.8622        15

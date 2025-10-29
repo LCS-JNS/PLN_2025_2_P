@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -5,7 +7,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
-import csv
 import re
 from datetime import datetime
 import nltk
@@ -17,13 +18,18 @@ import spacy
 
 # Baixar recursos necessários do NLTK (executar apenas na primeira vez)
 try:
+    nltk.data.find('tokenizers/punkt_tab')
     nltk.data.find('tokenizers/punkt')
     nltk.data.find('corpora/stopwords')
     nltk.data.find('corpora/rslp')
 except LookupError:
     print("Baixando recursos do NLTK...")
+    nltk.download('punkt_tab')
+    time.sleep(0.5)
     nltk.download('punkt')
+    time.sleep(0.5)
     nltk.download('stopwords')
+    time.sleep(0.5)
     nltk.download('rslp')
 
 # Carregar modelo do spaCy para lematização
@@ -366,6 +372,7 @@ def extrairDadosNoticias(driver, links):
             time.sleep(2)
             
             noticia = {
+                'genero': '',
                 'titulo': '',
                 'subtitulo': '',
                 'autor': '',
@@ -375,9 +382,17 @@ def extrairDadosNoticias(driver, links):
                 'data_coleta': datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
             }
 
+            # Extrai o gênero
+            try:
+                genero_elem = driver.find_element(By.CLASS_NAME, "header-editoria--link")
+                noticia['genero'] = genero_elem.text.strip()
+            except:
+                print(f"  Título não encontrado para: {link}")
+
             # Busca a div.mc-article-header para extrair título, subtítulo, autor e time
             try:
                 header = driver.find_element(By.CSS_SELECTOR, "div.mc-article-header")
+                
                 
                 # Extrai o título (h1)
                 try:
@@ -409,6 +424,7 @@ def extrairDadosNoticias(driver, links):
                     
             except:
                 print(f"  Header não encontrado para: {link}")
+                continue
             
             # Fazer scroll até o final da página para carregar todo o conteúdo
             print(f"  Fazendo scroll para carregar todo o conteúdo...")
@@ -487,7 +503,7 @@ def extrairDadosNoticias(driver, links):
     
     return noticias
 
-def salvar_csv(noticias, nome_arquivo=None):
+def salvar_csv(noticias, cDir):
     """
     Salva as notícias em arquivo CSV
     """
@@ -495,9 +511,7 @@ def salvar_csv(noticias, nome_arquivo=None):
         print("Nenhuma notícia para salvar.")
         return
     
-    if nome_arquivo is None:
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        nome_arquivo = f'noticias_g1_processadas_{timestamp}.csv'
+    nome_arquivo = f'{cDir}noticias_g1_processadas.csv'
     
     try:
         # Cria um DataFrame do pandas
@@ -531,7 +545,12 @@ def salvar_csv(noticias, nome_arquivo=None):
 def main():
     print("=== SCRAPER G1 COM PROCESSAMENTO LINGUÍSTICO COMPLETO ===")
     print("Pipeline: Tokenização → Normalização → Remoção de Ruídos → Stopwords → Stemming → Lematização\n")
-    
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    cDirRun = Path("./lista_resultados") / timestamp
+    cDirRun.mkdir(parents=True, exist_ok=True)
+
+    cDirRun = "./lista_resultados/"+timestamp+"/"
+        
     # Acessar o G1
     driver = acessar_g1()
    
@@ -555,16 +574,16 @@ def main():
                 tokens_normalizados.extend(noticia['tokens_normalizados'] )
                 tokens_stemmed.extend(noticia['tokens_stemmed'] )
                 tokens_lemmatizados.extend(noticia['tokens_lemmatizados'] )
-
-            salvar_lista(tokens_originais, "tokens.txt")
-            salvar_lista(tokens_normalizados, "normalizados.txt")
-            salvar_lista(tokens_stemmed, "stems.txt")
-            salvar_lista(tokens_lemmatizados, "lemmas.txt")
+            
+            salvar_lista(tokens_originais, cDirRun+"tokens.txt")
+            salvar_lista(tokens_normalizados, cDirRun+"normalizados.txt")
+            salvar_lista(tokens_stemmed, cDirRun+"stems.txt")
+            salvar_lista(tokens_lemmatizados, cDirRun+"lemmas.txt")
             
             if noticias:
                 print(f"\n=== SALVANDO DADOS PROCESSADOS ===")
                 # Salva os dados em CSV
-                arquivo_salvo = salvar_csv(noticias)
+                arquivo_salvo = salvar_csv(noticias,cDirRun)
                 
                 if arquivo_salvo:
                     print(f"\n Processo concluído com sucesso!")
